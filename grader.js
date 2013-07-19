@@ -85,26 +85,36 @@ if(require.main == module) {
         .option('-u, --url  <html_file>', 'Url to file.html', clone(assertFileExists2), URL_DEFAULT)
         .parse(process.argv);
     var fitxerALlegir = program.file;
-    console.log('program file: ' + fitxerALlegir);
-    console.log('url: ' + program.url);
+    //console.log('program file: ' + fitxerALlegir);
+    //console.log('url: ' + program.url);
     if(program.url != "NoURL"){
+        fitxerALlegir = "downloaded.html";
+	//console.log('OBTENINT URL');
 	rest.get(program.url).on('complete', function(result) {
 	    if (result instanceof Error) {
-		sys.puts('Error: ' + result.message);
+		console.log('Error: ' + result.message);
 		this.retry(5000); // try again after 5 sec
 	    } else {
+		//console.log('CREANT FITXER');
 		var lp = fs.openSync('./downloaded.html', 'w');
 		fs.writeSync(lp, result);
 		fs.close(lp);
+		
+		//console.log('program file: ' + fitxerALlegir);
+		//console.log('url: ' + program.url);
+		var checkJson = checkHtmlFile(fitxerALlegir, program.checks);
+		var outJson = JSON.stringify(checkJson, null, 4);
+		console.log(outJson);
 	    }
 	})
-	fitxerALlegir = "downloaded.html";
+	
+    } else {
+	//console.log('program file: ' + fitxerALlegir);
+	//console.log('url: ' + program.url);
+	var checkJson = checkHtmlFile(fitxerALlegir, program.checks);
+	var outJson = JSON.stringify(checkJson, null, 4);
+	console.log(outJson);
     }
-    console.log('program file: ' + fitxerALlegir);
-    console.log('url: ' + program.url);
-    var checkJson = checkHtmlFile(fitxerALlegir, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
