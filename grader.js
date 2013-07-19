@@ -27,7 +27,7 @@ var cheerio = require('cheerio');
 var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-var URL_DEFAULT = "http://agile-refuge-7196.herokuapp.com/";
+var URL_DEFAULT = "NoURL";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -35,6 +35,11 @@ var assertFileExists = function(infile) {
         console.log("%s does not exist. Exiting.", instr);
         process.exit(1); // http://nodejs.org/api/process.html#process_process_exit_code
     }
+    return instr;
+};
+
+var assertFileExists2 = function(infile) {
+    var instr = infile.toString();
     return instr;
 };
 
@@ -77,24 +82,27 @@ if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-        .option('-u, --url <url_file>', 'Url to file .html', clone(assertFileExists), URL_DEFAULT)
+        .option('-u, --url  <html_file>', 'Url to file.html', clone(assertFileExists2), URL_DEFAULT)
         .parse(process.argv);
-    console.log('program file: ' + program.file);
+    var fitxerALlegir = program.file;
+    console.log('program file: ' + fitxerALlegir);
     console.log('url: ' + program.url);
-    if(program.url != "..."){
-
-rest.get(program.url).on('complete', function(result) {
-  if (result instanceof Error) {
-    sys.puts('Error: ' + result.message);
-    this.retry(5000); // try again after 5 sec
-  } else {
-    sys.puts(result);
-    var checkJson = checkURL(result, program.checks);
-  }
-
-    } else { 
-       var checkJson = checkHtmlFile(program.file, program.checks);
-    }   
+    if(program.url != "NoURL"){
+	rest.get(program.url).on('complete', function(result) {
+	    if (result instanceof Error) {
+		sys.puts('Error: ' + result.message);
+		this.retry(5000); // try again after 5 sec
+	    } else {
+		var lp = fs.openSync('./downloaded.html', 'w');
+		fs.writeSync(lp, result);
+		fs.close(lp);
+	    }
+	})
+	fitxerALlegir = "downloaded.html";
+    }
+    console.log('program file: ' + fitxerALlegir);
+    console.log('url: ' + program.url);
+    var checkJson = checkHtmlFile(fitxerALlegir, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
 } else {
